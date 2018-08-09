@@ -26,7 +26,7 @@ def transcribe_gcs(gcs_uri):
 
     timestamp = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
     fout = codecs.open('transcribe{}.txt'.format(timestamp), 'a', 'UTF-8')
-    fout.write('Transcript, Confidence\n')
+    # fout.write('Transcript, Confidence\n')
 
     # Each result is for a consecutive portion of the audio. Iterate through
     # them to get the transcripts for the entire audio file.
@@ -34,8 +34,8 @@ def transcribe_gcs(gcs_uri):
         # The first alternative is the most likely one for this portion.
         # print(u'Transcript: {}'.format(result.alternatives[0].transcript))
         # print('Confidence: {}'.format(result.alternatives[0].confidence))
-        fout.write(u'{},'.format(result.alternatives[0].transcript))
-        fout.write('{}\n'.format(result.alternatives[0].confidence))
+        fout.write(u'{}\n'.format(result.alternatives[0].transcript))
+        # fout.write('{}\n'.format(result.alternatives[0].confidence))
     fout.close()
 
 # def fout_with_timestamp(output, timestamp):
