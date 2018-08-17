@@ -1,7 +1,0 @@
-Google, Normal
-WER: 0.544289
-ins: 1, del: 1444, sub: 1444, words: 2653
-
-VoiceRex
-WER: 0.859404
-ins: 0, del: 2280, sub: 2280, words: 2653
