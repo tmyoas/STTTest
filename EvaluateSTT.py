@@ -2,6 +2,7 @@ import argparse
 import io
 import sys
 import numpy
+import re
 
 class Levenshtein_distance():
     insertion_error = []
@@ -47,7 +48,7 @@ class Levenshtein_distance():
 
         for i in range(1, len(self.ans) + 1):
             for j in range(1, len(self.trans) + 1):
-                if self.ans[i - 1] == self.trans[j - 1]:
+                if self.ans[i - 1].lower() == self.trans[j - 1].lower():
                     m[i][j] =m[i - 1][j - 1]
                 else:
                     # distance_list = [ins_distance, del_distance, sub_distance]
@@ -55,11 +56,13 @@ class Levenshtein_distance():
                     m[i][j] = min(distance_list)
                     if numpy.argmin(distance_list) == 0:
                         self.insertion_error[i][j] = self.insertion_error[i - 1][j] + 1
+                        # print('ins: %d' % self.insertion_error[i][j])
                     elif numpy.argmin(distance_list) == 1:
                         self.deletion_error[i][j] = self.deletion_error[i][j - 1] + 1
+                        # print('del: %d' % self.deletion_error[i][j])
                     else:
                         self.substitution_error[i][j] = self.substitution_error[i - 1][j - 1] + 1
-        print(m[-1][-1])
+                        # print('sub: %d' % self.substitution_error[i][j])
         return m[-1][-1] / self.get_num_all()
 
 if __name__ == '__main__':
@@ -70,9 +73,9 @@ if __name__ == '__main__':
     parser.add_argument('transcription', help='A file of result Speech to Text.')
     parser.add_argument('answer', help='A file of correct answer data.')
 
-    fin = open(parser.parse_args().transcription)
+    fin = open(parser.parse_args().transcription, encoding="utf8")
     transcription_list = fin.read().split(" ")
-    fin = open(parser.parse_args().answer)
+    fin = open(parser.parse_args().answer, encoding="utf8")
     answer_list = fin.read().split(" ")
     fin.close()
 
@@ -81,5 +84,6 @@ if __name__ == '__main__':
 
     evaluate = Levenshtein_distance(transcription_list, answer_list)
     print('WER: %f' % evaluate.evaluateSTT())
+    # todo: fix output in console (same value del and sub)
     print('ins: %d, del: %d, sub: %d, words: %d' % (evaluate.get_e_ins(), evaluate.get_e_del(), evaluate.get_e_sub(), evaluate.get_num_all()))
 
