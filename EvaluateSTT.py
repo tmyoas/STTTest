@@ -5,65 +5,68 @@ import numpy
 import re
 
 class Levenshtein_distance():
-    insertion_error = []
-    deletion_error = []
-    substitution_error = []
     num_all_words = 0
+    m = []
+    error_hashmap = {}
 
     def __init__(self, trans, ans):
         self.trans = trans
         self.ans = ans
         self.num_all_words = len(self.ans)
-
-    def get_e_ins(self):
-        return self.insertion_error[-1][-1]
-
-    def get_e_del(self):
-        return self.deletion_error[-1][-1]
-
-    def get_e_sub(self):
-        return self.substitution_error[-1][-1]
+        self.m = numpy.zeros((len(self.ans) + 1) * (len(self.trans) + 1), dtype=numpy.uint16)
+        self.m = numpy.reshape(self.m, (len(self.ans) + 1, len(self.trans) + 1))
+        self.calcWER()
+        self.error_hashmap = self.calcErrorClass()
 
     def get_num_all(self):
         return self.num_all_words
 
-    def evaluateSTT(self):
-        m = numpy.zeros((len(self.ans) + 1) * (len(self.trans) + 1), dtype = numpy.uint16)
-        m = numpy.reshape(m, (len(self.ans) + 1, len(self.trans) + 1))
+    def get_error_type(self):
+        return self.error_hashmap
+    
+    def get_WER(self):
+        return self.m[-1][-1]/self.num_all_words
 
-        self.insertion_error = numpy.zeros((len(self.ans) + 1) * (len(self.trans) + 1), dtype = numpy.uint16)
-        self.insertion_error = numpy.reshape(self.insertion_error, (len(self.ans) + 1, len(self.trans) + 1))
-
-        self.deletion_error = numpy.zeros((len(self.ans) + 1) * (len(self.trans) + 1), dtype = numpy.uint16)
-        self.deletion_error = numpy.reshape(m, (len(self.ans) + 1, len(self.trans) + 1))
-
-        self.substitution_error = numpy.zeros((len(self.ans) + 1) * (len(self.trans) + 1), dtype = numpy.uint16)
-        self.substitution_error = numpy.reshape(m, (len(self.ans) + 1, len(self.trans) + 1))
-
+    def calcWER(self):
         for i in range(len(self.ans) + 1):
-            m[i][0] = i
+            self.m[i][0] = i
 
         for j in range(len(self.trans) + 1):
-            m[0][j] = j
+            self.m[0][j] = j
 
         for i in range(1, len(self.ans) + 1):
             for j in range(1, len(self.trans) + 1):
                 if self.ans[i - 1].lower() == self.trans[j - 1].lower():
-                    m[i][j] =m[i - 1][j - 1]
+                    self.m[i][j] = self.m[i - 1][j - 1]
                 else:
                     # distance_list = [ins_distance, del_distance, sub_distance]
-                    distance_list = [m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + 1]
-                    m[i][j] = min(distance_list)
-                    if numpy.argmin(distance_list) == 0:
-                        self.insertion_error[i][j] = self.insertion_error[i - 1][j] + 1
-                        # print('ins: %d' % self.insertion_error[i][j])
-                    elif numpy.argmin(distance_list) == 1:
-                        self.deletion_error[i][j] = self.deletion_error[i][j - 1] + 1
-                        # print('del: %d' % self.deletion_error[i][j])
-                    else:
-                        self.substitution_error[i][j] = self.substitution_error[i - 1][j - 1] + 1
-                        # print('sub: %d' % self.substitution_error[i][j])
-        return m[-1][-1] / self.get_num_all()
+                    distance_list = [self.m[i - 1][j] + 1, self.m[i][j - 1] + 1, self.m[i - 1][j - 1] + 1]
+                    self.m[i][j] = min(distance_list)
+        return 0
+    
+    def calcErrorClass(self):
+        a_i = len(self.ans)
+        t_i = len(self.trans)
+        error_hashmap = {"ins":0, "del":0, "sub":0, "equal":0}
+        while not (a_i == 0 and t_i == 0):
+            if a_i >= 1 and t_i >= 1 and self.m[a_i][t_i] == self.m[a_i - 1][t_i - 1] and self.ans[a_i - 1].lower() == self.trans[t_i - 1].lower():
+                a_i -= 1
+                t_i -= 1
+                error_hashmap["equal"] += 1
+            elif t_i >= 1 and self.m[a_i][t_i] == self.m[a_i][t_i - 1] + 1:
+                t_i -= 1
+                error_hashmap["ins"] += 1
+            elif a_i >= 1 and self.m[a_i][t_i] == self.m[a_i - 1][t_i] + 1:
+                a_i -= 1
+                error_hashmap["del"] += 1
+            elif a_i >= 1 and t_i >= 1 and self.m[a_i][t_i] == self.m[a_i - 1][t_i - 1] + 1:
+                a_i -= 1
+                t_i -= 1
+                error_hashmap["sub"] += 1
+            else:
+                print('error')
+                break
+        return error_hashmap
 
 if __name__ == '__main__':
     # Setting of command-line parameters
@@ -79,11 +82,9 @@ if __name__ == '__main__':
     answer_list = fin.read().split(" ")
     fin.close()
 
-    # print(transcription_list[0])
-    # print(answer_list[0])
-
     evaluate = Levenshtein_distance(transcription_list, answer_list)
-    print('WER: %f' % evaluate.evaluateSTT())
-    # todo: fix output in console (same value del and sub)
-    print('ins: %d, del: %d, sub: %d, words: %d' % (evaluate.get_e_ins(), evaluate.get_e_del(), evaluate.get_e_sub(), evaluate.get_num_all()))
+    print('WER: %f' % evaluate.get_WER())
+    hashmap = evaluate.get_error_type()
+    print('ins: %d, del: %d, sub: %d, correct: %d, words: %d' % (
+        hashmap["ins"], hashmap["del"], hashmap["sub"], hashmap["equal"], evaluate.get_num_all()))
 
