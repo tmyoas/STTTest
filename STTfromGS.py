@@ -2,12 +2,12 @@ import datetime
 import os
 import argparse
 import codecs
+from google.cloud import speech_v1p1beta1
+from google.cloud.speech_v1p1beta1 import enums
+from google.cloud.speech_v1p1beta1 import types
 
 def transcribe_gcs(gcs_uri, hint_phrases):
     """Asynchronously transcribes the audio file specified by the gcs_uri."""
-    from google.cloud import speech_v1p1beta1
-    from google.cloud.speech_v1p1beta1 import enums
-    from google.cloud.speech_v1p1beta1 import types
     client = speech_v1p1beta1.SpeechClient()
 
     audio = types.RecognitionAudio(uri=gcs_uri)
@@ -43,13 +43,23 @@ def transcribe_gcs(gcs_uri, hint_phrases):
                 fout.write(u'Word: {}\n'.format(word_info.word))
     fout.close()
 
-def get_Strings_file(path):
+def get_stringlist_from_file(path):
     str_list = []
     f = open(path, 'r')
     for line in f:
         str_list.append(line.rstrip())
     f.close()
     return str_list
+
+def get_hashmap_from_file(path):
+    # TODO: Convert each line(aaa=bbb) in file to hashmap({'aaa':'bbb'})
+    hashmap = {}
+    return hashmap
+
+def get_config_from_hashmap(config):
+    # TODO: Fill shortage config and return types.RecognitionConfig()
+    return types.RecognitionConfig()
+
 
 if __name__ == '__main__':
     # Setting of command-line parameters
@@ -59,7 +69,14 @@ if __name__ == '__main__':
     HINT_FILE = './resources\hint_list'
     hints = []
     if os.path.isfile(HINT_FILE):
-        hints = get_Strings_file(HINT_FILE)
+        hints = get_Stringlist_from_file(HINT_FILE)
 
-    transcribe_gcs(parser.parse_args().gspath, hints)
+    # CONFIG_FILE = './resources\config'
+    # config = {}
+    # if os.path.isfile(CONFIG_FILE):
+    #     config = get_Stringlist_from_file(CONFIG_FILE)
+    # if len(config) == 0:
+    # TODO: Handling if config file is shortage
+        
+    transcribe_gcs(parser.parse_args().gspath, hints, config)
 
