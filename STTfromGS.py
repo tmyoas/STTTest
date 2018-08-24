@@ -1,10 +1,7 @@
-import argparse
 import datetime
 import os
-import sys
 import argparse
 import codecs
-
 
 def transcribe_gcs(gcs_uri, hint_phrases):
     """Asynchronously transcribes the audio file specified by the gcs_uri."""
@@ -12,9 +9,6 @@ def transcribe_gcs(gcs_uri, hint_phrases):
     from google.cloud.speech_v1p1beta1 import enums
     from google.cloud.speech_v1p1beta1 import types
     client = speech_v1p1beta1.SpeechClient()
-
-    for i in hint_phrases:
-        print(i)
 
     audio = types.RecognitionAudio(uri=gcs_uri)
     config = types.RecognitionConfig(
@@ -26,9 +20,7 @@ def transcribe_gcs(gcs_uri, hint_phrases):
         diarization_speaker_count=3,
         speech_contexts=[speech_v1p1beta1.types.SpeechContext(phrases=hint_phrases)])
 
-
     operation = client.long_running_recognize(config, audio)
-
 
     print('Waiting for operation to complete...')
     response = operation.result(timeout=9000)
@@ -68,5 +60,6 @@ if __name__ == '__main__':
     hints = []
     if os.path.isfile(HINT_FILE):
         hints = get_Strings_file(HINT_FILE)
+
     transcribe_gcs(parser.parse_args().gspath, hints)
 
