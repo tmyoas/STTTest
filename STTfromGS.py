@@ -1,17 +1,20 @@
 import argparse
 import datetime
-import io
+import os
 import sys
 import argparse
 import codecs
 
 
-def transcribe_gcs(gcs_uri):
+def transcribe_gcs(gcs_uri, hint_phrases):
     """Asynchronously transcribes the audio file specified by the gcs_uri."""
     from google.cloud import speech_v1p1beta1
     from google.cloud.speech_v1p1beta1 import enums
     from google.cloud.speech_v1p1beta1 import types
     client = speech_v1p1beta1.SpeechClient()
+
+    for i in hint_phrases:
+        print(i)
 
     audio = types.RecognitionAudio(uri=gcs_uri)
     config = types.RecognitionConfig(
@@ -20,12 +23,15 @@ def transcribe_gcs(gcs_uri):
         language_code='en-US',
         enable_automatic_punctuation=True,
         enable_speaker_diarization=True,
-        diarization_speaker_count=3)
+        diarization_speaker_count=3,
+        speech_contexts=[speech_v1p1beta1.types.SpeechContext(phrases=hint_phrases)])
+
 
     operation = client.long_running_recognize(config, audio)
 
+
     print('Waiting for operation to complete...')
-    response = operation.result(timeout=900)
+    response = operation.result(timeout=9000)
     result_max_index = len(response.results) - 1
 
     timestamp = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
@@ -45,8 +51,22 @@ def transcribe_gcs(gcs_uri):
                 fout.write(u'Word: {}\n'.format(word_info.word))
     fout.close()
 
+def get_Strings_file(path):
+    str_list = []
+    f = open(path, 'r')
+    for line in f:
+        str_list.append(line.rstrip())
+    f.close()
+    return str_list
+
 if __name__ == '__main__':
     # Setting of command-line parameters
     parser = argparse.ArgumentParser()
     parser.add_argument('gspath', help='A Google Cloud Storage path with .flac file')
-    transcribe_gcs(parser.parse_args().gspath)
+
+    HINT_FILE = './resources\hint_list'
+    hints = []
+    if os.path.isfile(HINT_FILE):
+        hints = get_Strings_file(HINT_FILE)
+    transcribe_gcs(parser.parse_args().gspath, hints)
+
