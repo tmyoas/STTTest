@@ -7,6 +7,7 @@ from google.cloud import speech_v1p1beta1
 from google.cloud.speech_v1p1beta1 import enums
 from google.cloud.speech_v1p1beta1 import types
 
+
 def transcribe_gcs(gcs_uri, hint_phrases, config):
     """Asynchronously transcribes the audio file specified by the gcs_uri."""
     client = speech_v1p1beta1.SpeechClient()
@@ -25,24 +26,8 @@ def transcribe_gcs(gcs_uri, hint_phrases, config):
 
     print('Waiting for operation to complete...')
     response = operation.result(timeout=900)
-    result_max_index = len(response.results) - 1
+    return response
 
-    timestamp = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
-    fout = codecs.open('transcribe{}.txt'.format(timestamp), 'a', 'UTF-8')
-
-    # Each result is for a consecutive portion of the audio. Iterate through
-    # them to get the transcripts for the entire audio file.
-    for index, result in enumerate(response.results):
-        # The first alternative is the most likely one for this portion.
-        alternative = result.alternatives[0]
-        fout.write(u'Transcript: {}\n'.format(alternative.transcript))
-        fout.write('Confidence: {}\n'.format(alternative.confidence))
-        if index == result_max_index:
-            # When last loop, output speaker_tag with each word
-            for word_info in alternative.words:
-                fout.write('Speaker: {}, '.format(word_info.speaker_tag))
-                fout.write(u'Word: {}\n'.format(word_info.word))
-    fout.close()
 
 def get_stringlist_from_file(path):
     str_list = []
@@ -51,6 +36,7 @@ def get_stringlist_from_file(path):
         str_list.append(line.rstrip())
     f.close()
     return str_list
+
 
 def get_hashmap_from_file(path):
     # Default values
@@ -74,10 +60,41 @@ def get_hashmap_from_file(path):
     f.close()
     return hashmap
 
+
+def get_transcription_from_response(response, is_compare = True):
+    result_max_index = len(response.results) - 1
+
+    timestamp = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
+    fout = codecs.open('transcribe{}.txt'.format(timestamp), 'a', 'UTF-8')
+
+    # Each result is for a consecutive portion of the audio. Iterate through
+    # them to get the transcripts for the entire audio file.
+    if is_compare:
+        for index, result in enumerate(response.results):
+            # The first alternative is the most likely one for this portion.
+            alternative = result.alternatives[0]
+            fout.write(u'{}'.format(alternative.transcript))
+        fout.close()
+    else:
+        for index, result in enumerate(response.results):
+            # The first alternative is the most likely one for this portion.
+            alternative = result.alternatives[0]
+            fout.write(u'Transcript: {}\n'.format(alternative.transcript))
+            fout.write('Confidence: {}\n'.format(alternative.confidence))
+            if index == result_max_index:
+                # When last loop, output speaker_tag with each word
+                for word_info in alternative.words:
+                    fout.write('Speaker: {}, '.format(word_info.speaker_tag))
+                    fout.write(u'Word: {}\n'.format(word_info.word))
+        fout.close()
+    return 0;
+
+
 if __name__ == '__main__':
     # Setting of command-line parameters
     parser = argparse.ArgumentParser()
     parser.add_argument('gspath', help='A Google Cloud Storage path with .flac file')
+    parser.add_argument('--compare', '-c', action="store_true", help='Output mode (Just result or add confidence, speaker_tag, and so on.)')
 
     HINT_FILE = './resources\hint_list'
     hints = []
@@ -89,4 +106,10 @@ if __name__ == '__main__':
     if os.path.isfile(CONFIG_FILE):
         config = get_hashmap_from_file(CONFIG_FILE)
 
-    transcribe_gcs(parser.parse_args().gspath, hints, config)
+    is_compare = None
+    if parser.parse_args().compare:
+        is_compare = True
+    else:
+        is_compare = False
+
+    get_transcription_from_response(transcribe_gcs(parser.parse_args().gspath, hints, config), is_compare)
