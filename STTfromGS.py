@@ -1,6 +1,5 @@
 import datetime
 import os
-import re
 import argparse
 import codecs
 from google.cloud import speech_v1p1beta1
@@ -8,18 +7,20 @@ from google.cloud.speech_v1p1beta1 import enums
 from google.cloud.speech_v1p1beta1 import types
 
 
-def transcribe_gcs(gcs_uri, hint_phrases, config):
+def transcribe_gcs(gcs_uri, hint_phrases, set_config):
     """Asynchronously transcribes the audio file specified by the gcs_uri."""
     client = speech_v1p1beta1.SpeechClient()
 
     audio = types.RecognitionAudio(uri=gcs_uri)
+
+    # Set default values, check dict having each key and cast from str to each type.
     config = types.RecognitionConfig(
-        encoding=config['encoding'],
-        sample_rate_hertz=config['sample_rate_hertz'],
-        language_code=config['language_code'],
-        enable_automatic_punctuation=config['enable_automatic_punctuation'],
-        enable_speaker_diarization=config['enable_speaker_diarization'],
-        diarization_speaker_count=config['diarization_speaker_count'],
+        encoding=eval(set_config.get('encoding', 'enums.RecognitionConfig.AudioEncoding.FLAC')),
+        sample_rate_hertz=int(set_config.get('sample_rate_hertz', 16000)),
+        language_code=set_config.get('language_code', 'en-US'),
+        enable_automatic_punctuation=eval(set_config.get('enable_automatic_punctuation', True)),
+        enable_speaker_diarization=eval(set_config.get('enable_speaker_diarization', False)),
+        diarization_speaker_count=int(set_config.get('diarization_speaker_count', 1)),
         speech_contexts=[speech_v1p1beta1.types.SpeechContext(phrases=hint_phrases)])
 
     operation = client.long_running_recognize(config, audio)
@@ -39,29 +40,16 @@ def get_stringlist_from_file(path):
 
 
 def get_hashmap_from_file(path):
-    # Default values
     hashmap = {}
-    hashmap['encoding'] = enums.RecognitionConfig.AudioEncoding.FLAC
-    hashmap['sample_rate_hertz'] = 16000
-    hashmap['language_code'] = 'en-US'
-    hashmap['enable_automatic_punctuation'] = True
-    hashmap['enable_speaker_diarization'] = False
-    hashmap['diarization_speaker_count'] = 1
-
     f = open(path, 'r')
     for line in f:
         tmp = line.rstrip().split("=")
-        if tmp[0] == 'encoding' or tmp[0].count('enable'):
-            hashmap[tmp[0]] = eval(tmp[1])
-        elif tmp[1].isdecimal():
-            hashmap[tmp[0]] = int(tmp[1])
-        else:
-            hashmap[tmp[0]] = tmp[1]
+        hashmap[tmp[0]] = tmp[1]
     f.close()
     return hashmap
 
 
-def get_transcription_from_response(response, is_compare = True):
+def get_transcription_from_response(response, is_compare = False):
     result_max_index = len(response.results) - 1
 
     timestamp = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
@@ -87,7 +75,7 @@ def get_transcription_from_response(response, is_compare = True):
                     fout.write('Speaker: {}, '.format(word_info.speaker_tag))
                     fout.write(u'Word: {}\n'.format(word_info.word))
         fout.close()
-    return 0;
+    return 0
 
 
 if __name__ == '__main__':
@@ -96,7 +84,7 @@ if __name__ == '__main__':
     parser.add_argument('gspath', help='A Google Cloud Storage path with .flac file')
     parser.add_argument('--compare', '-c', action="store_true", help='Output mode (Just result or add confidence, speaker_tag, and so on.)')
 
-    HINT_FILE = './resources\hint_list'
+    HINT_FILE = './resources/hint_list'
     hints = []
     if os.path.isfile(HINT_FILE):
         hints = get_stringlist_from_file(HINT_FILE)
