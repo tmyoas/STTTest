@@ -6,12 +6,17 @@ from google.cloud import speech_v1p1beta1
 from google.cloud.speech_v1p1beta1 import enums
 from google.cloud.speech_v1p1beta1 import types
 
+import EvaluateSTT
+
 
 def transcribe_gcs(gcs_uri, hint_phrases, set_config):
     """Asynchronously transcribes the audio file specified by the gcs_uri."""
     client = speech_v1p1beta1.SpeechClient()
 
     audio = types.RecognitionAudio(uri=gcs_uri)
+
+    # hint_phrase = []
+    # set_config['enable_speaker_diarization'] = 'False'
 
     # Set default values, check dict having each key and cast from str to each type.
     config = types.RecognitionConfig(
@@ -61,7 +66,8 @@ def get_transcription_from_response(response, is_compare = False):
         for index, result in enumerate(response.results):
             # The first alternative is the most likely one for this portion.
             alternative = result.alternatives[0]
-            fout.write(u'{}'.format(alternative.transcript))
+            # Sometime transcript added "." even if enable_speaker_punctuation=False.
+            fout.write(u'{}'.format(alternative.transcript.rstrip(".")))
         fout.close()
     else:
         for index, result in enumerate(response.results):
@@ -101,3 +107,4 @@ if __name__ == '__main__':
         is_compare = False
 
     get_transcription_from_response(transcribe_gcs(parser.parse_args().gspath, hints, config), is_compare)
+
