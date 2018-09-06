@@ -67,5 +67,17 @@ class Test_Levenshtein_distance(unittest.TestCase):
         self.assertEqual(actual.get_error_type()['sub'], expected_sub)
         self.assertEqual(actual.get_error_type()['del'], expected_del)
 
+    def test_calcWER_complicate(self):
+        transcription_list = ['All', 'you', 'need', 'is', 'kill']
+        answer_list = ['This', 'is', 'a', 'pen']
+        expected_num_all = 4
+        expected_total = 5
+        expected_wer = expected_total / expected_num_all
+        actual = Levenshtein_distance(transcription_list, answer_list)
+
+        self.assertEqual(actual.get_num_all(), expected_num_all)
+        self.assertEqual(actual.get_WER(), expected_wer)
+        self.assertEqual(actual.get_error_type()['ins'] + actual.get_error_type()['sub'] + actual.get_error_type()['del'], expected_total)
+
 if __name__ == "__main__":
     unittest.main()
