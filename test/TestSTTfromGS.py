@@ -1,6 +1,10 @@
 import unittest
-import STTfromGS
-from unittest import mock
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '../'))
+from src import STTfromGS
+
 
 class Test_STTfromGS(unittest.TestCase):
     def test_get_stringlist_from_file(self):

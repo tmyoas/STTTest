@@ -4,8 +4,10 @@
 ```
 <root>
     readme.md
-    STTfromGS.py
-    EvaluateSTT.py
+    requirements.txt
+    /src
+        STTfromGS.py
+        EvaluateSTT.py
     /resources
         recognition_config
     /test

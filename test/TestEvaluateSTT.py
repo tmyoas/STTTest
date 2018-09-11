@@ -1,5 +1,9 @@
 import unittest
-from EvaluateSTT import Levenshtein_distance
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '../'))
+from src.EvaluateSTT import Levenshtein_distance
 
 class Test_Levenshtein_distance(unittest.TestCase):
 
