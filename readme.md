@@ -8,6 +8,12 @@
     EvaluateSTT.py
     /resources
         recognition_config
+    /test
+        TestSTTfromGS.py
+        TestEvaluateSTT.py
+        /resources
+            stringlist
+            hashmap
 ```
 
 ## Overview
