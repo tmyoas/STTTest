@@ -3,11 +3,7 @@ import os
 import argparse
 import codecs
 from google.cloud import speech_v1p1beta1
-from google.cloud.speech_v1p1beta1 import enums
 from google.cloud.speech_v1p1beta1 import types
-
-import EvaluateSTT
-
 
 def transcribe_gcs(gcs_uri, hint_phrases, set_config):
     """Asynchronously transcribes the audio file specified by the gcs_uri."""
