@@ -3,6 +3,7 @@ import os
 import argparse
 import codecs
 from google.cloud import speech_v1p1beta1
+from google.cloud.speech_v1p1beta1 import enums
 from google.cloud.speech_v1p1beta1 import types
 
 def transcribe_gcs(gcs_uri, hint_phrases, set_config):
@@ -14,6 +15,7 @@ def transcribe_gcs(gcs_uri, hint_phrases, set_config):
     # hint_phrase = []
     # set_config['enable_speaker_diarization'] = 'False'
 
+    print(set_config.get('enable_automatic_punctuation'))
     # Set default values, check dict having each key and cast from str to each type.
     config = types.RecognitionConfig(
         encoding=eval(set_config.get('encoding', 'enums.RecognitionConfig.AudioEncoding.FLAC')),
@@ -81,17 +83,20 @@ def get_transcription_from_response(response, is_compare = False):
 
 
 if __name__ == '__main__':
+    abs_dirpath = os.path.abspath(os.path.dirname(__file__))
     # Setting of command-line parameters
     parser = argparse.ArgumentParser()
     parser.add_argument('gspath', help='A Google Cloud Storage path with .flac file')
     parser.add_argument('--compare', '-c', action="store_true", help='Output mode (Just result or add confidence, speaker_tag, and so on.)')
 
-    HINT_FILE = './resources/hint_list'
+    HINT_FILE = os.path.join(abs_dirpath, '../resources/hint_list')
+    print(HINT_FILE)
     hints = []
     if os.path.isfile(HINT_FILE):
         hints = get_stringlist_from_file(HINT_FILE)
 
-    CONFIG_FILE = './resources/recognition_config'
+    CONFIG_FILE = os.path.join(abs_dirpath, '../resources/recognition_config')
+
     config = {}
     if os.path.isfile(CONFIG_FILE):
         config = get_hashmap_from_file(CONFIG_FILE)

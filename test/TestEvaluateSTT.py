@@ -2,7 +2,8 @@ import unittest
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '../'))
+abs_dirpath = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(os.path.join(abs_dirpath, '../'))
 from src.EvaluateSTT import Levenshtein_distance
 
 class Test_Levenshtein_distance(unittest.TestCase):
