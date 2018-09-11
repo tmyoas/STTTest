@@ -44,6 +44,7 @@ jobs:
           command: |
             . venv/bin/activate
             pwd
+            ls test
             python -m unittest discover test
 
       - store_artifacts:
