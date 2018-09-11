@@ -45,6 +45,7 @@ jobs:
             . venv/bin/activate
             pwd
             ls test
+            cat test/TestEvaluateSTT.py
             python -m unittest discover test
 
       - store_artifacts:
