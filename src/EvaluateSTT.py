@@ -3,6 +3,8 @@ import io
 import sys
 import numpy
 import re
+import os
+import datetime
 
 class Levenshtein_distance():
     num_all_words = 0
@@ -68,6 +70,25 @@ class Levenshtein_distance():
                 break
         return error_hashmap
 
+def outputResult():
+    result_str_list = []
+    result_str_list.append('WER: %f' % evaluate.get_WER())
+    hashmap = evaluate.get_error_type()
+    result_str_list.append('ins: %d, del: %d, sub: %d, correct: %d, words: %d' % (
+        hashmap["ins"], hashmap["del"], hashmap["sub"], hashmap["equal"], evaluate.get_num_all()))
+
+    if parser.parse_args().output:
+        resultpath = os.path.split(parser.parse_args().output)
+        os.makedirs(resultpath[0], exist_ok=True)
+        file = open(parser.parse_args().output, mode='a', encoding="utf8")
+        file.write(datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S") + '\n')
+        file.write(result_str_list[0] + '\n')
+        file.write(result_str_list[1] + '\n')
+        file.write('---' + '\n')
+        file.close()
+    return result_str_list
+
+
 if __name__ == '__main__':
     # Setting of command-line parameters
     # transcription: result of Speech to Text
@@ -75,6 +96,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('transcription', help='A file of result Speech to Text.')
     parser.add_argument('answer', help='A file of correct answer data.')
+    parser.add_argument('--output', '-o', nargs='?', const='./result_evaluateSTT.txt', help='An output file (default: ./result_evaluateSTT.txt)')
 
     fin = open(parser.parse_args().transcription, encoding="utf8")
     transcription_list = fin.read().split(" ")
@@ -83,8 +105,7 @@ if __name__ == '__main__':
     fin.close()
 
     evaluate = Levenshtein_distance(transcription_list, answer_list)
-    print('WER: %f' % evaluate.get_WER())
-    hashmap = evaluate.get_error_type()
-    print('ins: %d, del: %d, sub: %d, correct: %d, words: %d' % (
-        hashmap["ins"], hashmap["del"], hashmap["sub"], hashmap["equal"], evaluate.get_num_all()))
+    result = outputResult()
 
+    for i in result:
+        print(i)

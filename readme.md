@@ -30,6 +30,10 @@
 ```
 # STTfromGS.py <Google Storage address>
 ```
+- Options:
+```
+--compare , -c : Output file is reshaped for evaluateSTT.py (Only transtribe text). 
+```
 
 ### EvaluateSST.py
 - Input: 
@@ -38,11 +42,15 @@
 - Output:
     - Word error rate (in console)
 - Usage in console: 
- ```
+```
  # EvaluateSTT.py <Transcription file> <Answer file>
  # WER: <float>
- # ins: <int>, del: <int>, sub: <int>, correct: <int>, words: <int>
- ```
+ # ins: <int>, del: <int>, sub: <int>, correct: <int>, words: <int> 
+```
+- Options:
+```
+--output <filepath>, -o <filepath>: Output a result with timestamp in selected file. './result_evaluateSTT.txt' is used if you don't set <filepath>.
+```
     
     
 ### resources/hint_list
