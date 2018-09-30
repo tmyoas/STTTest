@@ -44,6 +44,10 @@ class Levenshtein_distance():
                     # distance_list = [ins_distance, del_distance, sub_distance]
                     distance_list = [self.m[i - 1][j] + 1, self.m[i][j - 1] + 1, self.m[i - 1][j - 1] + 1]
                     self.m[i][j] = min(distance_list)
+
+            print("\rProgress: {0:d}%".format(int(i / self.get_num_all() * 100)), end="")
+        print('')
+        print('Complete evaluate.')
         return 0
     
     def calc_error_class(self):
