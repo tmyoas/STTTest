@@ -17,8 +17,8 @@ class Levenshtein_distance():
         self.num_all_words = len(self.ans)
         self.m = numpy.zeros((len(self.ans) + 1) * (len(self.trans) + 1), dtype=numpy.uint16)
         self.m = numpy.reshape(self.m, (len(self.ans) + 1, len(self.trans) + 1))
-        self.calcWER()
-        self.error_hashmap = self.calcErrorClass()
+        self.calc_WER()
+        self.error_hashmap = self.calc_error_class()
 
     def get_num_all(self):
         return self.num_all_words
@@ -29,7 +29,7 @@ class Levenshtein_distance():
     def get_WER(self):
         return self.m[-1][-1]/self.num_all_words
 
-    def calcWER(self):
+    def calc_WER(self):
         for i in range(len(self.ans) + 1):
             self.m[i][0] = i
 
@@ -46,7 +46,7 @@ class Levenshtein_distance():
                     self.m[i][j] = min(distance_list)
         return 0
     
-    def calcErrorClass(self):
+    def calc_error_class(self):
         a_i = len(self.ans)
         t_i = len(self.trans)
         error_hashmap = {"ins":0, "del":0, "sub":0, "equal":0}
@@ -70,7 +70,8 @@ class Levenshtein_distance():
                 break
         return error_hashmap
 
-def outputResult():
+def output_result(evaluate):
+    # evaluate: class Levenshtein_distance
     result_str_list = []
     result_str_list.append('WER: %f' % evaluate.get_WER())
     hashmap = evaluate.get_error_type()
@@ -105,7 +106,7 @@ if __name__ == '__main__':
     fin.close()
 
     evaluate = Levenshtein_distance(transcription_list, answer_list)
-    result = outputResult()
+    result = output_result(evaluate)
 
     for i in result:
         print(i)
