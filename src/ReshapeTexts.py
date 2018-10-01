@@ -8,22 +8,24 @@ import datetime
 import re
 
 def replace_patterns(del_pattern, ins_pattern, input_list):
+    temp_list = []
     for i in range(0, len(input_list) - 1):
-        input_list[i] = re.sub(del_pattern, ins_pattern, input_list[i])
-    while '' in input_list:
-        input_list.remove('')
-    return input_list
+        temp_list[i] = re.sub(del_pattern, ins_pattern, input_list[i])
+    while '' in temp_list:
+        temp_list.remove('')
+    return temp_list
 
 def remove_additional_info(input_list):
     pattern = r'transcript:[ ]*|confidence: [0-9.]\n|[0-9]{2}:[0-9]{2}:[0-5][0-9].?'
     return replace_patterns(pattern, '', input_list)
 
 def remove_line_feed_code(input_list):
+    temp_list = []
     for i in range(0, len(input_list) - 1):
-        input_list[i] = input_list[i].strip()
-    while '' in input_list:
-        input_list.remove('')
-    return input_list
+        temp_list[i] = input_list[i].strip()
+    while '' in temp_list:
+        temp_list.remove('')
+    return temp_list
 
 def remove_space_around_apostrophe(input_list):
     del_pattern = r" '|' "
@@ -35,7 +37,7 @@ def replace_delimiter(input_list):
     return input_list
 
 def remove_punctuation():
-    return 0
+    return input_list
 
 def get_reshaped_texts(input_list):
     # TODO:
