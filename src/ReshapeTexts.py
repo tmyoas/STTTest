@@ -7,35 +7,52 @@ import os
 import datetime
 import re
 
-def remove_additional_info(input_list):
-    pattern = r'Transcript:[ ]*|Confidence: [0-9.]\n|[0-9]{2}:[0-9]{2}:[0-5][0-9]'
-    input_list = [i.replace(pattern, '') for i in input_list]
+def replace_patterns(del_pattern, ins_pattern, input_list):
+    for i in range(0, len(input_list) - 1):
+        input_list[i] = re.sub(del_pattern, ins_pattern, input_list[i])
     while '' in input_list:
         input_list.remove('')
     return input_list
 
-def remove_line_feed_code():
-    return 0
+def remove_additional_info(input_list):
+    pattern = r'transcript:[ ]*|confidence: [0-9.]\n|[0-9]{2}:[0-9]{2}:[0-5][0-9].?'
+    return replace_patterns(pattern, '', input_list)
 
-def replace_delimiter():
-    return 0
+def remove_line_feed_code(input_list):
+    for i in range(0, len(input_list) - 1):
+        input_list[i] = input_list[i].strip()
+    while '' in input_list:
+        input_list.remove('')
+    return input_list
 
-def remove_space_around_apostrophe():
-    return 0
+def remove_space_around_apostrophe(input_list):
+    del_pattern = r" '|' "
+    ins_pattern = r"'"
+    replace_patterns(del_pattern, ins_pattern, input_list)
+    return input_list
+
+def replace_delimiter(input_list):
+    return input_list
 
 def remove_punctuation():
     return 0
 
-def get_reshaped_texts(self):
+def get_reshaped_texts(input_list):
     # TODO:
-    # remove "Transcript:[ ]*", "Confidence: [0-9.]\n" for STTfromGS.py
-    # remove "\r" and "\n". : rstrip?
-    # replace "-" to " "
+    # DONE unify upper / lower case.
+    # DONE remove "Transcript:[ ]*", "Confidence: [0-9.]\n" for STTfromGS.py
+    # DONE remove "\r" and "\n". : strip?
+    # DONE remove <sp> around "'". : [ ]*'[ ]* -> '
+    # replace "-" -> split("-")
     # replace [ ]+ to " " : split(" ") -> if list[n] == "" : del list[n] ?
-    # remove <sp> around "'". : [ ]*'[ ]* -> '
     # also remove ",", ".", "!", and "?"
-    # NO NEED to unify upper / lower case.
-    return 0
+
+    for i in range(0, len(input_list) - 1):
+        input_list[i] = input_list.lower()
+
+    list = []
+
+    return ' '.join(list)
 
 def make_output_file(parser):
     return 0
