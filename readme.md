@@ -8,6 +8,7 @@
     /src
         STTfromGS.py
         EvaluateSTT.py
+        ReshapeTexts.py
     /resources
         recognition_config
     /test
@@ -51,6 +52,21 @@
 ```
 --output <filepath>, -o <filepath>: Output a result with timestamp in selected file. './result_evaluateSTT.txt' is used if you don't set <filepath>.
 ```
+
+### ReshapeTexts.py
+- Input: 
+    - <transcript file>.txt (Using STTfromGS.py/Voice Rep Pro 3)
+- Output:
+    - <transcript file>_reshaped.txt
+        - One line, only, result, no punctuation.
+- Usage in console: 
+```
+# ReshapeTexts.py <transcription file>
+```
+- Options:
+```
+--output <filepath>, -o <filepath> : You can set output filepath and filename (in default, <transcript file>_reshaped.txt is made the same directory as input file.) 
+```
     
     
 ### resources/hint_list
@@ -67,3 +83,8 @@
 ...
 ```
 config_parameter: Please check official information
+
+## TODO
+- Make unit test
+- Define how to change '-' in ReshapeTexts.py
+- Add reshape option in STTfromGS.py
