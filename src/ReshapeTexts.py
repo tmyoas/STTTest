@@ -73,7 +73,7 @@ if __name__ == '__main__':
     parser.add_argument('target', help='A reshape-target file.')
     parser.add_argument('output', nargs='?', help='An output file (default: <target filename>_reshaped.txt)')
 
-    fin = open(parser.parse_args().target, encoding="utf8")
+    fin = open(parser.parse_args().target, encoding="utf8", errors='ignore')
     input_list = fin.readlines()
     fin.close()
 
