@@ -13,7 +13,7 @@ def replace_patterns(del_pattern, ins_pattern, input_list):
 
 def remove_additional_info(input_list):
     # remove "Transcript:[ ]*", "Confidence: [0-9.]\n" for STTfromGS.py
-    pattern = r'transcript:[ ]*|confidence: [0-9.]*\n|[0-9]{2}:[0-9]{2}:[0-5][0-9][ ]{2}'
+    pattern = r'transcript:[ ]*|confidence: [0-9.]*\n|[0-9]{2}:[0-9]{2}:[0-5][0-9].?'
     return replace_patterns(pattern, '', input_list)
 
 def remove_line_feed_code(input_list):
