@@ -1,11 +1,7 @@
 import argparse
-import io
-import sys
-import numpy
-import re
 import os
-import datetime
 import re
+import chardet
 
 def replace_patterns(del_pattern, ins_pattern, input_list):
     temp_list = []
@@ -73,9 +69,12 @@ if __name__ == '__main__':
     parser.add_argument('target', help='A reshape-target file.')
     parser.add_argument('output', nargs='?', help='An output file (default: <target filename>_reshaped.txt)')
 
-    fin = open(parser.parse_args().target, encoding="utf8", errors='ignore')
-    input_list = fin.readlines()
-    fin.close()
+    # detect character code
+    with open(parser.parse_args().target, 'rb') as f:
+        char_code = chardet.detect(f.read()).get('encoding')
+
+    with open(parser.parse_args().target, encoding=char_code, errors='ignore') as fin:
+        input_list = fin.readlines()
 
     # reshape_texts
     output = get_reshaped_texts(input_list)
