@@ -11,6 +11,11 @@ def replace_patterns(del_pattern, ins_pattern, input_list):
         temp_list.remove('')
     return temp_list
 
+def remove_speaker_name(input_list):
+    # remove "<Speaker name>:[ ]*" for answer transcription
+    pattern = r'\A[A-Z?][a-zA-Z?]+:'
+    return replace_patterns(pattern, '', input_list)
+
 def remove_additional_info(input_list):
     # remove "Transcript:[ ]*", "Confidence: [0-9.]\n" for STTfromGS.py
     pattern = r'transcript:[ ]*|confidence: [0-9.]*\n|[0-9]{2}:[0-9]{2}:[0-5][0-9].?'
@@ -19,7 +24,7 @@ def remove_additional_info(input_list):
 def remove_line_feed_code(input_list):
     # DONE remove "\r" and "\n"
     temp_list = []
-    for i in range(0, len(input_list) - 1):
+    for i in range(0, len(input_list)):
         temp_list.append(input_list[i].strip())
     while '' in temp_list:
         temp_list.remove('')
@@ -27,8 +32,13 @@ def remove_line_feed_code(input_list):
 
 def remove_space_around_apostrophe(input_list):
     # remove <sp> around "'"
-    del_pattern = r" '|' "
+    del_pattern = r" '|' |’"
     ins_pattern = r"'"
+    return replace_patterns(del_pattern, ins_pattern, input_list)
+
+def replace_metachar(input_list):
+    del_pattern = '\.\.\.|\*\*\*|\-'
+    ins_pattern = ' '
     return replace_patterns(del_pattern, ins_pattern, input_list)
 
 def replace_space(input_list):
@@ -38,21 +48,25 @@ def replace_space(input_list):
     return replace_patterns(del_pattern, ins_pattern, input_list)
 
 def remove_punctuation(input_list):
-    # DONE also remove ",", ".", "!", and "?"
-    pattern = r"[,.!?]+"
+    # DONE also remove ",", ".", "!", "?", and " " at the end of sentences
+    pattern = r"[,.!?]+|' '\Z"
     return replace_patterns(pattern, '', input_list)
 
 def get_reshaped_texts(input_list):
     # TODO:
     # how to change "-"
 
-    # unify upper / lower case.
-    for i in range(0, len(input_list) - 1):
-        input_list[i] = input_list[i].lower()
+    # run before unifying upper / lower case for detecting speaker name.
+    ans_list = remove_speaker_name(input_list)
 
-    ans_list = remove_additional_info(input_list)
+    # unify upper / lower case.
+    for i in range(0, len(ans_list)):
+        ans_list[i] = ans_list[i].lower()
+
+    ans_list = remove_additional_info(ans_list)
     ans_list = remove_line_feed_code(ans_list)
     ans_list = remove_space_around_apostrophe(ans_list)
+    ans_list = replace_metachar(ans_list)
     ans_list = replace_space(ans_list)
     ans_list = remove_punctuation(ans_list)
     return ' '.join(ans_list)
