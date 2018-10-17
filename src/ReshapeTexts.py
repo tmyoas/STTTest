@@ -49,7 +49,7 @@ def replace_space(input_list):
 
 def remove_punctuation(input_list):
     # DONE also remove ",", ".", "!", "?", and " " at the end of sentences
-    pattern = r"[,.!?]+|' '\Z"
+    pattern = r"[ ]?[,.!?]+|' '\Z"
     return replace_patterns(pattern, '', input_list)
 
 def get_reshaped_texts(input_list):
