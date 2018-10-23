@@ -11,15 +11,26 @@ def replace_patterns(del_pattern, ins_pattern, input_list):
         temp_list.remove('')
     return temp_list
 
+def remove_patterns(del_pattern, input_list):
+    return replace_patterns(del_pattern, '', input_list)
+
+def remove_nontarget_speaker(input_list, target):
+    # remove "<Nontarget speaker name>: .*" from answer transcription
+    pattern = r'^(' + target + ':).*'
+    for i in range(0, len(input_list)):
+        if re.match(pattern, input_list[i]):
+            input_list[i + 1] = '\n'
+    return input_list
+
 def remove_speaker_name(input_list):
-    # remove "<Speaker name>:[ ]*" for answer transcription
+    # remove "<Speaker name>:[ ]*" from answer transcription
     pattern = r'\A[A-Z?][a-zA-Z?]+:'
-    return replace_patterns(pattern, '', input_list)
+    return remove_patterns(pattern, input_list)
 
 def remove_additional_info(input_list):
     # remove "Transcript:[ ]*", "Confidence: [0-9.]\n" for STTfromGS.py
     pattern = r'transcript:[ ]*|confidence: [0-9.]*\n|[0-9]{2}:[0-9]{2}:[0-5][0-9].?'
-    return replace_patterns(pattern, '', input_list)
+    return remove_patterns(pattern, input_list)
 
 def remove_line_feed_code(input_list):
     # DONE remove "\r" and "\n"
@@ -50,14 +61,18 @@ def replace_space(input_list):
 def remove_punctuation(input_list):
     # DONE also remove ",", ".", "!", "?", and " " at the end of sentences
     pattern = r"[ ]?[,.!?]+|' '\Z"
-    return replace_patterns(pattern, '', input_list)
+    return remove_patterns(pattern, input_list)
 
 def get_reshaped_texts(input_list):
     # TODO:
     # how to change "-"
 
     # run before unifying upper / lower case for detecting speaker name.
-    ans_list = remove_speaker_name(input_list)
+    if parser.parse_args().name:
+        ans_list = remove_nontarget_speaker(input_list, parser.parse_args().name)
+    else:
+        ans_list = input_list
+    ans_list = remove_speaker_name(ans_list)
 
     # unify upper / lower case.
     for i in range(0, len(ans_list)):
@@ -82,6 +97,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('target', help='A reshape-target file.')
     parser.add_argument('output', nargs='?', help='An output file (default: <target filename>_reshaped.txt)')
+    parser.add_argument('--name', '-n', nargs='?', const=None, help='Target speaker name')
 
     # detect character code
     with open(parser.parse_args().target, 'rb') as f:
