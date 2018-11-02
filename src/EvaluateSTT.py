@@ -25,6 +25,7 @@ class Levenshtein_distance():
 
     def get_error_type(self):
         return self.error_hashmap
+
     
     def get_WER(self):
         return self.m[-1][-1]/self.num_all_words
@@ -54,24 +55,50 @@ class Levenshtein_distance():
         a_i = len(self.ans)
         t_i = len(self.trans)
         error_hashmap = {"ins":0, "del":0, "sub":0, "equal":0}
+        # error_list = []
+        # compare_list = [["Answer word", "Transcription word"], ["Answer word", "Transcription word"], ...]
+        #        |  Ans   |  Trans
+        # ----------------------------
+        # Correct|Ans word|    ""
+        #   Ins  |   *    |Trans word
+        #   Del  |Ans word|    *
+        #   Sub  |Ans word|Trans word
+        compare_list = []
         while not (a_i == 0 and t_i == 0):
             if a_i >= 1 and t_i >= 1 and self.m[a_i][t_i] == self.m[a_i - 1][t_i - 1] and self.ans[a_i - 1].lower() == self.trans[t_i - 1].lower():
                 a_i -= 1
                 t_i -= 1
                 error_hashmap["equal"] += 1
+                # error_list.append("C")
+                compare_list.append([self.ans[a_i], u""])
             elif t_i >= 1 and self.m[a_i][t_i] == self.m[a_i][t_i - 1] + 1:
                 t_i -= 1
                 error_hashmap["ins"] += 1
+                # error_list.append("I")
+                compare_list.append([u"*", self.trans[t_i]])
             elif a_i >= 1 and self.m[a_i][t_i] == self.m[a_i - 1][t_i] + 1:
                 a_i -= 1
                 error_hashmap["del"] += 1
+                # error_list.append("D")
+                compare_list.append([self.ans[a_i], u"*"])
             elif a_i >= 1 and t_i >= 1 and self.m[a_i][t_i] == self.m[a_i - 1][t_i - 1] + 1:
                 a_i -= 1
                 t_i -= 1
                 error_hashmap["sub"] += 1
+                # error_list.append("S")
+                compare_list.append([self.ans[a_i], self.trans[t_i]])
             else:
                 print('error')
                 break
+        # with open('error_list.txt', 'a') as f:
+        #     for i in error_list:
+        #         f.write(i)
+        compare_list.reverse()
+        if parser.parse_args().compare:
+            with open(parser.parse_args().compare, 'a', encoding='utf-8') as f:
+                for compare_pair in compare_list:
+                    f.write(compare_pair[0] + u"," + compare_pair[1] + "\n")
+
         return error_hashmap
 
 def output_result(evaluate):
@@ -102,11 +129,16 @@ if __name__ == '__main__':
     parser.add_argument('transcription', help='A file of result Speech to Text.')
     parser.add_argument('answer', help='A file of correct answer data.')
     parser.add_argument('--output', '-o', nargs='?', const='./result_evaluateSTT.txt', help='An output file (default: ./result_evaluateSTT.txt)')
+    parser.add_argument('--compare', '-c', nargs='?', const='./compare_list.txt', help='A compare file (default: ./compare_list.txt)')
 
     fin = open(parser.parse_args().transcription, encoding="utf8")
     transcription_list = fin.read().split(" ")
+    while '' in transcription_list:
+        transcription_list.remove('')
     fin = open(parser.parse_args().answer, encoding="utf8")
     answer_list = fin.read().split(" ")
+    while '' in answer_list:
+        answer_list.remove('')
     fin.close()
 
     evaluate = Levenshtein_distance(transcription_list, answer_list)

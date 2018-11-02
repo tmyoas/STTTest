@@ -63,7 +63,7 @@ def remove_punctuation(input_list):
     pattern = r"[ ]?[,.!?]+|' '\Z"
     return remove_patterns(pattern, input_list)
 
-def get_reshaped_texts(input_list):
+def get_reshaped_texts(input_list, parser):
     # TODO:
     # how to change "-"
 
@@ -107,7 +107,7 @@ if __name__ == '__main__':
         input_list = fin.readlines()
 
     # reshape_texts
-    output = get_reshaped_texts(input_list)
+    output = get_reshaped_texts(input_list, parser)
 
     # TODO: separate method (make_output_file)
     if not parser.parse_args().output:
