@@ -26,7 +26,6 @@ class Levenshtein_distance():
     def get_error_type(self):
         return self.error_hashmap
 
-    
     def get_WER(self):
         return self.m[-1][-1]/self.num_all_words
 
@@ -64,6 +63,8 @@ class Levenshtein_distance():
         #   Del  |Ans word|    *
         #   Sub  |Ans word|Trans word
         compare_list = []
+        error_count_list = []
+        error_count_temp = 0
         while not (a_i == 0 and t_i == 0):
             if a_i >= 1 and t_i >= 1 and self.m[a_i][t_i] == self.m[a_i - 1][t_i - 1] and self.ans[a_i - 1].lower() == self.trans[t_i - 1].lower():
                 a_i -= 1
@@ -71,22 +72,31 @@ class Levenshtein_distance():
                 error_hashmap["equal"] += 1
                 # error_list.append("C")
                 compare_list.append([self.ans[a_i], u""])
+                error_count_list.append(error_count_temp)
+                error_count_temp = 0
             elif t_i >= 1 and self.m[a_i][t_i] == self.m[a_i][t_i - 1] + 1:
                 t_i -= 1
                 error_hashmap["ins"] += 1
                 # error_list.append("I")
                 compare_list.append([u"*", self.trans[t_i]])
+                error_count_temp += 1
             elif a_i >= 1 and self.m[a_i][t_i] == self.m[a_i - 1][t_i] + 1:
                 a_i -= 1
                 error_hashmap["del"] += 1
                 # error_list.append("D")
                 compare_list.append([self.ans[a_i], u"*"])
+                error_count_temp += 1
+                error_count_list.append(error_count_temp)
+                error_count_temp = 0
             elif a_i >= 1 and t_i >= 1 and self.m[a_i][t_i] == self.m[a_i - 1][t_i - 1] + 1:
                 a_i -= 1
                 t_i -= 1
                 error_hashmap["sub"] += 1
                 # error_list.append("S")
                 compare_list.append([self.ans[a_i], self.trans[t_i]])
+                error_count_temp += 1
+                error_count_list.append(error_count_temp)
+                error_count_temp = 0
             else:
                 print('error')
                 break
@@ -98,6 +108,12 @@ class Levenshtein_distance():
             with open(parser.parse_args().compare, 'a', encoding='utf-8') as f:
                 for compare_pair in compare_list:
                     f.write(compare_pair[0] + u"," + compare_pair[1] + "\n")
+
+        error_count_list.append(error_count_temp)
+        error_count_list.reverse()
+        with open('./error_count.txt', 'a', encoding='utf-8') as f:
+            for i in error_count_list:
+                f.write(str(abs(i)) + "\n")
 
         return error_hashmap
 

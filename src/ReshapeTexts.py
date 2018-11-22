@@ -2,11 +2,21 @@ import argparse
 import os
 import re
 import chardet
+import inflect
 
 def replace_patterns(del_pattern, ins_pattern, input_list):
     temp_list = []
     for i in range(0, len(input_list)):
         temp_list.append(re.sub(del_pattern, ins_pattern, input_list[i]))
+    while '' in temp_list:
+        temp_list.remove('')
+    return temp_list
+
+def replace_multi_patterns(del_pattern_list, ins_pattern_list, input_list):
+    temp_list = []
+    for i in range(0, len(input_list)):
+        for j in range(0, min(len(del_pattern_list), len(ins_pattern_list))):
+            temp_list.append(re.sub(del_pattern_list[j], ins_pattern_list[j], input_list[i]))
     while '' in temp_list:
         temp_list.remove('')
     return temp_list
@@ -26,6 +36,20 @@ def remove_speaker_name(input_list):
     # remove "<Speaker name>:[ ]*" from answer transcription
     pattern = r'\A[A-Z?][a-zA-Z?]+:'
     return remove_patterns(pattern, input_list)
+
+def replace_equal_expressions(input_list):
+    # TODO: make a method to transform equal pattern
+    # def replace_equal_patterns(input_list):
+        # replace 'no.' to 'number'
+        # replace 'okay' to 'ok'
+        # replace 'numeric' to 'alphabet words'
+    del_pattern_list = []
+    ins_pattern_list = []
+    del_pattern_list.append(r'no.')
+    ins_pattern_list.append(r'number ')
+    del_pattern_list.append(r'okay')
+    ins_pattern_list.append(r'ok')
+    return replace_multi_patterns(del_pattern_list, ins_pattern_list, input_list)
 
 def remove_additional_info(input_list):
     # remove "Transcript:[ ]*", "Confidence: [0-9.]\n" for STTfromGS.py
